@@ -23,7 +23,7 @@ type Props<ItemT> = {
   data: ItemT[];
   renderItem: (
     info: ListRenderItemInfo<ItemT> & {
-      dimensions: {width: number; height: number};
+      dimensions: { width: number; height: number };
     },
   ) => React.ReactNode;
   renderSkipButton?: () => React.ReactNode;
@@ -37,6 +37,7 @@ type Props<ItemT> = {
   activeDotStyle: ViewStyle;
   dotStyle: ViewStyle;
   dotClickEnabled: boolean;
+  showDot: Boolean;
   skipLabel: string;
   doneLabel: string;
   nextLabel: string;
@@ -75,6 +76,7 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
     showPrevButton: false,
     showSkipButton: false,
     bottomButton: false,
+    showDot: true
   };
   state = {
     width: 0,
@@ -85,7 +87,7 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
 
   goToSlide = (pageNum: number, triggerOnSlideChange?: boolean) => {
     const prevNum = this.state.activeIndex;
-    this.setState({activeIndex: pageNum});
+    this.setState({ activeIndex: pageNum });
     this.flatList?.scrollToOffset({
       offset: this._rtlSafeIndex(pageNum) * this.state.width,
     });
@@ -103,10 +105,10 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
 
   // Render a slide
   _renderItem = (flatListArgs: any) => {
-    const {width, height} = this.state;
-    const props = {...flatListArgs, dimensions: {width, height}};
+    const { width, height } = this.state;
+    const props = { ...flatListArgs, dimensions: { width, height } };
     // eslint-disable-next-line react-native/no-inline-styles
-    return <View style={{width, flex: 1}}>{this.props.renderItem(props)}</View>;
+    return <View style={{ width, flex: 1 }}>{this.props.renderItem(props)}</View>;
   };
 
   _renderButton = (
@@ -244,7 +246,7 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
     );
   };
 
-  _onMomentumScrollEnd = (e: {nativeEvent: NativeScrollEvent}) => {
+  _onMomentumScrollEnd = (e: { nativeEvent: NativeScrollEvent }) => {
     const offset = e.nativeEvent.contentOffset.x;
     // Touching very very quickly and continuous brings about
     // a variation close to - but not quite - the width.
@@ -256,15 +258,15 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
       return;
     }
     const lastIndex = this.state.activeIndex;
-    this.setState({activeIndex: newIndex});
+    this.setState({ activeIndex: newIndex });
     this.props.onSlideChange && this.props.onSlideChange(newIndex, lastIndex);
   };
 
-  _onLayout = ({nativeEvent}: LayoutChangeEvent) => {
-    const {width, height} = nativeEvent.layout;
+  _onLayout = ({ nativeEvent }: LayoutChangeEvent) => {
+    const { width, height } = nativeEvent.layout;
     if (width !== this.state.width || height !== this.state.height) {
       // Set new width to update rendering of pages
-      this.setState({width, height});
+      this.setState({ width, height });
       // Set new scroll position
       const func = () => {
         this.flatList?.scrollToOffset({
@@ -290,6 +292,7 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
       renderItem,
       data,
       extraData,
+      showDot,
       ...otherProps
     } = this.props;
     /* eslint-enable @typescript-eslint/no-unused-vars */
@@ -315,9 +318,14 @@ export default class AppIntroSlider<ItemT = any> extends React.Component<
           initialNumToRender={data.length}
           {...otherProps}
         />
-        {renderPagination
-          ? renderPagination(this.state.activeIndex)
-          : this._renderPagination()}
+        {
+          showDot &&
+          <View>
+            {renderPagination
+              ? renderPagination(this.state.activeIndex)
+              : this._renderPagination()}
+          </View>
+        }
       </View>
     );
   }
